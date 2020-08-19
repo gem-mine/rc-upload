@@ -142,7 +142,7 @@ class AjaxUploader extends Component {
       return;
     }
     const { props } = this;
-    let { data,headers } = props;
+    let { data, headers } = props;
     const {
       onStart,
       onProgress,
