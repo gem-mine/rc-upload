@@ -85,10 +85,16 @@ class AjaxUploader extends Component {
         .call(e.dataTransfer.files)
         .filter(file => attrAccept(file, this.props.accept));
 
+      let refuseFiles = Array.prototype.slice
+        .call(e.dataTransfer.files)
+        .filter(file => !attrAccept(file, this.props.accept));
+
       if (multiple === false) {
         files = files.slice(0, 1);
+        refuseFiles = refuseFiles.slice(0, 1);
       }
 
+      this.onError(refuseFiles);
       this.uploadFiles(files);
     }
   }
@@ -100,6 +106,22 @@ class AjaxUploader extends Component {
   componentWillUnmount() {
     this._isMounted = false;
     this.abort();
+  }
+
+  // 拖拽上传时，不接受上传的文件类型(accept之外的文件类型)
+  onError = (files) => {
+    const refuseFiles = Array.prototype.slice.call(files);
+    refuseFiles
+      .map(file => {
+        file.uid = getUid();
+        return file;
+      })
+      .forEach(file => {
+        const { props } = this;
+        if (props.onError) {
+          props.onError('File types not accepted for upload', -130, file);
+        }
+      });
   }
 
   uploadFiles = (files) => {
@@ -142,7 +164,7 @@ class AjaxUploader extends Component {
       return;
     }
     const { props } = this;
-    let { data,headers } = props;
+    let { data, headers } = props;
     const {
       onStart,
       onProgress,
